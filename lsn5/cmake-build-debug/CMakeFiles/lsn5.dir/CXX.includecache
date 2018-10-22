@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn5/lsn5.cpp
+lsn5.h
+/Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn5/lsn5.h
+iostream
+-
+vector
+-
+queue
+-
+stack
+-
+set
+-
+
+/Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn5/lsn5.h
+
