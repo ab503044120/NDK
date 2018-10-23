@@ -6,6 +6,14 @@
 
 #IncludeRegexTransform: 
 
+/Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn6/SafeQueue.h
+iostream
+-
+queue
+-
+pthread.h
+-
+
 /Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn6/main.cpp
 iostream
 -
@@ -13,6 +21,8 @@ thread
 -
 pthread.h
 -
+SafeQueue.h
+/Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn6/SafeQueue.h
 queue
 -
 

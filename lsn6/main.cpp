@@ -2,8 +2,76 @@
 
 #include <thread>
 #include <pthread.h>
+#include "SafeQueue.h"
+#include "Ptr.h"
 
 using namespace std;
+
+class A{
+public:
+    ~A(){
+        cout << "释放A" << endl;
+    }
+};
+
+void testPtr() {
+    A *a1 = new A;
+    A *a2 = new A;
+
+    //shared_a 处于栈当中
+    Ptr<A> shared_a(a1); // a 引用计数:1
+    //先创建了一个对象 变量是shared_b
+    // a2 野生对象(没有智能指针指向a2了 )
+    Ptr<A> shared_b(a2);  // 1
+    //再将 shared_b 变量 重新赋值
+    shared_b = shared_a;
+    //出方法 shared_a 与 shared_b 会被回收
+    //delete a2;
+}
+
+//智能指针
+int main(){
+    //c++ 11 st1 两种类型智能指针
+    testPtr();
+
+    vector<int> v;
+//    decltype(v);
+//    vector<int>::iterator it = v.begin();
+//    for(auto i: v){
+//        cout <<
+//    }
+    auto it = v.begin();
+    return 0;
+}
+
+SafeQueue<int> sq;
+void * get(void *){
+    while (1){
+        int i;
+        //如果没有数据就卡在这里
+        sq.pop(i);
+        cout << "取出数据：" << i << endl;
+    }
+    return 0;
+}
+
+
+void * put(void *){
+    while (1){
+        int i;
+        //将用户输入 给i保存
+        cin >> i;
+        sq.push(i);
+    }
+}
+
+int main4(){
+    pthread_t pid1, pid2;
+    pthread_create(&pid1, 0, get, 0);
+    pthread_create(&pid2, 0, put, 0);
+    pthread_join(pid1, 0);
+    return 0;
+}
 
 void task(int i) {
     cout << "线程：" << i << endl;
@@ -33,7 +101,7 @@ void *queue_task(void *args) {
     return 0;
 }
 
-int main() {
+int main3() {
     pthread_mutex_init(&mutex1, 0);
     for (size_t i = 0; i < 5; ++i) {
         q.push(i);

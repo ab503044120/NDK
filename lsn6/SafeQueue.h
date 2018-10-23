@@ -26,7 +26,9 @@ public:
     void push(T t){
         pthread_mutex_lock(&mutex);
         q.push(t);
-
+        //由系统唤醒一个线程
+        pthread_cond_signal(&cond);
+        //广播通知所有等待线程
         pthread_cond_broadcast(&cond);
         pthread_mutex_unlock(&mutex);
     }
@@ -35,6 +37,7 @@ public:
     void pop(T& t){
         pthread_mutex_lock(&mutex);
         while (q.empty()){
+            //挂起，让CPU休息
             pthread_cond_wait(&cond, &mutex);
         }
 

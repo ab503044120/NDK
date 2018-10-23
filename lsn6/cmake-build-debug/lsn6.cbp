@@ -82,6 +82,9 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn6/Ptr.h">
+			<Option target="lsn6"/>
+		</Unit>
 		<Unit filename="/Users/xiuchengyin/Documents/Tina-NDK/NDK/lsn6/SafeQueue.h">
 			<Option target="lsn6"/>
 		</Unit>
