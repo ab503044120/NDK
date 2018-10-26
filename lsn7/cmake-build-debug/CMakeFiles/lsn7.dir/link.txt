@@ -1,0 +1,1 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -g -dynamiclib -Wl,-headerpad_max_install_names  -o liblsn7.dylib -install_name @rpath/liblsn7.dylib CMakeFiles/lsn7.dir/main.cpp.o 
