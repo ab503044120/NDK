@@ -1,28 +1,22 @@
-# For more information about using CMake with Android Studio, read the
-# documentation: https://d.android.com/studio/projects/add-native-code.html
-
-# Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.4.1)
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
 
-add_library( # Sets the name of the library.
+
+# 创建一个变量 source_file 它的值就是src/main/cpp/ 所有的.cpp文件
+file(GLOB source_file src/main/cpp/*.cpp)
+
+add_library(
              native-lib
 
              SHARED
 
-             src/main/cpp/native-lib.cpp )
+             ${source_file} )
 
 include_directories(src/main/cpp/include)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -L${CMAKE_SOURCE_DIR}/src/main/cpp/libs/${ANDROID_ABI}")
 
-
-
+ #avfilter avformat    avcodec  avutil  swresample swscale
 target_link_libraries(  native-lib
-                avcodec avfilter avformat avutil swresample swscale
-                      log )
+                avformat avcodec avfilter avutil swresample swscale
+                      log  z)

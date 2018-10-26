@@ -1,16 +1,29 @@
 #include <jni.h>
 #include <string>
+#include "TinaFFmpeg.h"
 
-extern "C"{
-#include <libavcodec/avcodec.h>
+/**
+ * 解视频，获取视频相关的Info
+ */
+TinaFFmpeg *ffmpeg = 0;
+
+JavaVM *javaVM = 0;
+
+int JNI_OnLoad(JavaVM *vm, void *r) {
+    javaVM = vm;
+    return JNI_VERSION_1_6;
+
 }
-extern "C" JNIEXPORT jstring
 
-JNICALL
-Java_tina_com_player_MainActivity_stringFromJNI(
-        JNIEnv *env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    av_version_info();
-    return env->NewStringUTF(av_version_info());
+extern "C"
+JNIEXPORT void JNICALL
+Java_tina_com_player_TinaPlayer_nativePrepare(JNIEnv *env, jobject instance, jstring dataSource_) {
+    const char *dataSource = env->GetStringUTFChars(dataSource_, 0);
+
+    JavaCallHelper *callHelper = new JavaCallHelper(javaVM, env, instance);
+
+    ffmpeg = new TinaFFmpeg(callHelper, dataSource);
+    ffmpeg->prepare();
+
+    env->ReleaseStringUTFChars(dataSource_, dataSource);
 }
