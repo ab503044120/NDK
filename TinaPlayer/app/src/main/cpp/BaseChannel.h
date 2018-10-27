@@ -12,11 +12,14 @@ extern "C"{
 
 class BaseChannel{
 public:
-    BaseChannel(int id, AVCodecContext *avCodecContext):id(id), avCodecContext(avCodecContext){}
+    BaseChannel(int id, AVCodecContext *avCodecContext):id(id), avCodecContext(avCodecContext){
+        packets.setRelaseCallback(releaseAvPacket);
+        frames.setRelaseCallback(releaseAvFrame);
+    }
 
     virtual ~BaseChannel(){
-        packets.setRelaseCallback(BaseChannel::releaseAvPacket);
         packets.clear();
+        frames.clear();
     }//子类必须实现
 
     static void releaseAvPacket(AVPacket** packet){
@@ -36,8 +39,11 @@ public:
     virtual void play() = 0;
 
     int id;
-
+    //解码数据包队列
+    SafeQueue<AVFrame *> frames;
+    //编码数据包队列
     SafeQueue<AVPacket*> packets;
+
     AVCodecContext *avCodecContext;
 
     bool isPlaying;

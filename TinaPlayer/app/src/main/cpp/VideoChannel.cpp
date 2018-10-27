@@ -9,7 +9,7 @@ extern "C"{
 }
 
 VideoChannel::VideoChannel(int id, AVCodecContext *avCodecContext) : BaseChannel(id, avCodecContext) {
-    frames.setRelaseCallback(releaseAvFrame);
+
 }
 
 VideoChannel::~VideoChannel() {
@@ -30,6 +30,9 @@ void *render_task(void *args) {
 
 void VideoChannel::play() {
     isPlaying = 1;
+    packets.setWork(1);
+    frames.setWork(1);
+
     //1.解码
     pthread_create(&pid_decode, 0, decode_task, this);
 
