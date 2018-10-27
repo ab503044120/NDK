@@ -5,9 +5,12 @@
 #ifndef TINAPLAYER_AUDIOCHANNEL_H
 #define TINAPLAYER_AUDIOCHANNEL_H
 
+#include "BaseChannel.h"
 
-class AudioChannel {
-
+class AudioChannel: public BaseChannel {
+public:
+    AudioChannel(int id, AVCodecContext *avCodecContext);
+    void play();
 };
 
 

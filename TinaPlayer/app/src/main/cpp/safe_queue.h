@@ -15,7 +15,9 @@ template<typename T>
 class SafeQueue {
 
     //定义一个函数指针
-    typedef void(*RelaseCallback)(T &);
+    typedef void(*RelaseCallback)(T *);
+
+    typedef void (*SyncHandle)(queue<T> &);
 
 public:
     SafeQueue() {
@@ -28,17 +30,20 @@ public:
         pthread_cond_destroy(&cond);
     }
 
-    void push(T value) {
+    void push(T new_value) {
         pthread_mutex_lock(&mutex);
-        q.push(value);
-        //通知
+        if (work) {
+            q.push(new_value);
+            pthread_cond_signal(&cond);
+            pthread_mutex_unlock(&mutex);
+        }
         pthread_mutex_unlock(&mutex);
     }
 
     int pop(T &value) {
         int ret = 0;
         pthread_mutex_lock(&mutex);
-        while (q.empty()) {
+        while (work && q.empty()) {
             //没有数据就等待
             pthread_cond_wait(&cond, &mutex);
         }
@@ -51,16 +56,31 @@ public:
         return ret;
     }
 
+    void setWork(int work) {
+        pthread_mutex_lock(&mutex);
+        this->work = work;
+        pthread_cond_signal(&cond);
+        pthread_mutex_unlock(&mutex);
+    }
+
+    int empty() {
+        return q.empty();
+    }
+
+    int size() {
+        return q.size();
+    }
+
     void clear() {
         pthread_mutex_lock(&mutex);
-        uint32_t size = q.size();
+        int size = q.size();
         for (int i = 0; i < size; ++i) {
             //取出队首的变量
             T value = q.front();
 
             //释放value
-            if (relaseCallback){
-                relaseCallback(value);
+            if (relaseCallback) {
+                relaseCallback(&value);
             }
 
             q.pop();
@@ -68,7 +88,18 @@ public:
         pthread_mutex_unlock(&mutex);
     }
 
-    void setRelaseCallback(RelaseCallback relaseCallback){
+    void sync() {
+        pthread_mutex_lock(&mutex);
+        //同步代码
+        syncHandle(q);
+        pthread_mutex_unlock(&mutex);
+    }
+
+    void setSyncHandle(SyncHandle s) {
+        syncHandle = s;
+    }
+
+    void setRelaseCallback(RelaseCallback relaseCallback) {
         this->relaseCallback = relaseCallback;
     }
 
@@ -76,7 +107,11 @@ private:
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     queue<T> q;
+    int work;
+
     RelaseCallback relaseCallback;
+
+    SyncHandle syncHandle;
 };
 
 #endif //TINAPLAYER_SAFE_QUEUE_H

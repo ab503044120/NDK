@@ -1,5 +1,6 @@
 package tina.com.player;
 
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -43,8 +44,11 @@ public class TinaPlayer implements SurfaceHolder.Callback{
         nativePrepare(dataSource);
     }
 
+    /**
+     * 播放
+     */
     public void start(){
-
+        native_start();
     }
 
     public void stop(){
@@ -81,7 +85,7 @@ public class TinaPlayer implements SurfaceHolder.Callback{
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
+        native_setSurface(holder.getSurface());
     }
 
     /**
@@ -93,7 +97,7 @@ public class TinaPlayer implements SurfaceHolder.Callback{
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        native_setSurface(holder.getSurface());
     }
 
     /**
@@ -106,6 +110,10 @@ public class TinaPlayer implements SurfaceHolder.Callback{
     }
 
     native void nativePrepare(String dataSource);
+
+    native void native_start();
+
+    native void native_setSurface(Surface surface);
 
 
 }

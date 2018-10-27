@@ -18,7 +18,8 @@ TinaFFmpeg::TinaFFmpeg(JavaCallHelper *callHelper, const char *dataSource) {
     //需要内存拷贝，否则会造成悬空指针
 //    this->dataSource = const_cast<char *>(dataSource);
     this->callHelper = callHelper;
-    this->dataSource = new char[strlen(dataSource)];
+    //strlen 获得字符串的长度，不包括\0
+    this->dataSource = new char[strlen(dataSource) + 1];
     stpcpy(this->dataSource, dataSource);
 }
 
@@ -100,10 +101,11 @@ void TinaFFmpeg::_prepare() {
         }
 
         //音频
-        if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO){
-            audioChannel = new AudioChannel;
+        if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO){//0
+            audioChannel = new AudioChannel(i, context);
         } else if(codecpar->codec_type == AVMEDIA_TYPE_VIDEO){//视频
-            videoChannel = new VideoChannel;
+            videoChannel = new VideoChannel(i, context);
+            videoChannel->setRenderFrameCallback(callback);
         }
     }
 
@@ -118,5 +120,47 @@ void TinaFFmpeg::_prepare() {
 }
 
 
+void* play(void* args){
+    TinaFFmpeg* fFmpeg = static_cast<TinaFFmpeg *>(args);
+    fFmpeg->_start();
+    return 0;
+}
 
+void TinaFFmpeg::start() {
+    //重新开线程
+    isPlaying = 1;
+    if(videoChannel){
+        //设置为工作状态
+        videoChannel->packets.setWork(1);
+        videoChannel->play();
+    }
+    pthread_create(&pid_play, 0, play, this);
+}
+
+void TinaFFmpeg::_start() {
+    int ret;
+    //1.读取媒体数据包（音频、视频数据）
+    while (isPlaying){
+        AVPacket *avPacket = av_packet_alloc();
+        ret = av_read_frame(formatContext, avPacket);
+        //等于0成功，其它失败
+        if(ret == 0){
+            if(audioChannel && avPacket->stream_index == audioChannel->id){
+                //todo 音频
+            } else if(videoChannel && avPacket->stream_index == videoChannel->id){
+                //在videoChannel中执行 解码工作
+                videoChannel->packets.push(avPacket);
+            }
+        }else if(ret == AVERROR_EOF){
+
+        }else{
+
+        }
+
+    }
+}
+
+void TinaFFmpeg::setRenderFrameCallback(RenderFrameCallback callback){
+    this->callback = callback;
+}
 

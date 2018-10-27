@@ -24,13 +24,22 @@ public:
 
     void _prepare();
 
+    void start();
+
+    void _start();
+
+    void setRenderFrameCallback(RenderFrameCallback callback);
+
 private:
     char *dataSource;
     pthread_t pid;
-    AVFormatContext *formatContext;
+    pthread_t pid_play;
+    AVFormatContext *formatContext = 0;
     JavaCallHelper *callHelper;
-    AudioChannel *audioChannel;
-    VideoChannel *videoChannel;
+    AudioChannel *audioChannel = 0;//指针初始化最好赋值为null
+    VideoChannel *videoChannel = 0;
+    bool isPlaying;
+    RenderFrameCallback callback;
 };
 
 
