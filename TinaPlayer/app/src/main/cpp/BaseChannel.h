@@ -12,7 +12,7 @@ extern "C"{
 
 class BaseChannel{
 public:
-    BaseChannel(int id, AVCodecContext *avCodecContext):id(id), avCodecContext(avCodecContext){
+    BaseChannel(int id, AVCodecContext *avCodecContext, AVRational time_base):id(id), avCodecContext(avCodecContext), time_base(time_base){
         packets.setRelaseCallback(releaseAvPacket);
         frames.setRelaseCallback(releaseAvFrame);
     }
@@ -47,6 +47,10 @@ public:
     AVCodecContext *avCodecContext;
 
     bool isPlaying;
+
+    AVRational time_base;
+public:
+    double clock;
 };
 
 #endif //TINAPLAYER_BASECHANNEL_H

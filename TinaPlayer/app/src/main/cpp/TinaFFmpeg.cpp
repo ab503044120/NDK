@@ -99,12 +99,19 @@ void TinaFFmpeg::_prepare() {
             callHelper->onError(THREAD_CHILD, FFMPEG_ALLOC_CODEC_CONTEXT_FAIL);
             return;
         }
+        //单位
+        AVRational time_base = stream->time_base;
 
         //音频
         if (codecpar->codec_type == AVMEDIA_TYPE_AUDIO){//0
-            audioChannel = new AudioChannel(i, context);
+            audioChannel = new AudioChannel(i, context, time_base);
         } else if(codecpar->codec_type == AVMEDIA_TYPE_VIDEO){//视频
-            videoChannel = new VideoChannel(i, context);
+
+            //帧率：单位时间内，需要显示多少个图片
+            AVRational frame_rate = stream->avg_frame_rate;
+            int fps = av_q2d(frame_rate);
+
+            videoChannel = new VideoChannel(i, context, time_base, fps);
             videoChannel->setRenderFrameCallback(callback);
         }
     }
@@ -129,16 +136,17 @@ void* play(void* args){
 void TinaFFmpeg::start() {
     //重新开线程
     isPlaying = 1;
-    if(videoChannel){
-        //设置为工作状态
-        videoChannel->packets.setWork(1);
-        videoChannel->play();
-    }
     if (audioChannel){
         //设置为工作状态
-        audioChannel->packets.setWork(1);
         audioChannel->play();
     }
+
+    if(videoChannel){
+        //设置为工作状态
+        videoChannel->setAudioChannel(audioChannel);
+        videoChannel->play();
+    }
+
     pthread_create(&pid_play, 0, play, this);
 }
 
