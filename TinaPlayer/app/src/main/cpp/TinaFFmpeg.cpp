@@ -134,6 +134,11 @@ void TinaFFmpeg::start() {
         videoChannel->packets.setWork(1);
         videoChannel->play();
     }
+    if (audioChannel){
+        //设置为工作状态
+        audioChannel->packets.setWork(1);
+        audioChannel->play();
+    }
     pthread_create(&pid_play, 0, play, this);
 }
 
@@ -147,6 +152,8 @@ void TinaFFmpeg::_start() {
         if(ret == 0){
             if(audioChannel && avPacket->stream_index == audioChannel->id){
                 //todo 音频
+                //在audioChannel中执行 解码工作
+                audioChannel->packets.push(avPacket);
             } else if(videoChannel && avPacket->stream_index == videoChannel->id){
                 //在videoChannel中执行 解码工作
                 videoChannel->packets.push(avPacket);
