@@ -223,17 +223,53 @@ void AudioChannel::_play() {
      */
     //获取播放器队列接口
     (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_BUFFERQUEUE,
-                                    &bqPlayerBufferQueue);
+                                    &bqPlayerBufferQueueInterface);
 
     //设置回调
-    (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, bqPlayerCallback, this);
+    (*bqPlayerBufferQueueInterface)->RegisterCallback(bqPlayerBufferQueueInterface, bqPlayerCallback, this);
 
 
     // 5. 设置播放状态
     (*bqPlayerInterface)->SetPlayState(bqPlayerInterface, SL_PLAYSTATE_PLAYING);
 
     //6. 手动激活启动回调
-    bqPlayerCallback(bqPlayerBufferQueue, this);
+    bqPlayerCallback(bqPlayerBufferQueueInterface, this);
+
+}
+
+
+void AudioChannel::stop() {
+    isPlaying = 0;
+    packets.setWork(0);
+    frames.setWork(0);
+
+    pthread_join(pid_audio_decode, 0);
+    pthread_join(pid_audio_player, 0);
+    if (swrContext){
+        swr_free(&swrContext);
+        swrContext = 0;
+    }
+
+    //释放播放器
+    if(bqPlayerObject){
+        (*bqPlayerObject)->Destroy(bqPlayerObject);
+        bqPlayerObject = 0;
+        bqPlayerInterface = 0;
+        bqPlayerBufferQueueInterface = 0;
+    }
+
+    //释放混音器
+    if(outputMixObject){
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = 0;
+    }
+
+    //释放引擎
+    if(engineObject){
+        (*engineObject)->Destroy(engineObject);
+        engineObject = 0;
+        engineInterface = 0;
+    }
 
 }
 

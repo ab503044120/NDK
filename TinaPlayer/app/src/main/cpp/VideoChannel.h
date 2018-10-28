@@ -26,6 +26,8 @@ public:
 
     void render();
 
+    void stop();
+
     void setRenderFrameCallback(RenderFrameCallback callback);
 
 private:

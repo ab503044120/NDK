@@ -3,6 +3,7 @@
 //本地窗口, 需要cmake 中引入 android包
 #include <android/native_window_jni.h>
 #include "TinaFFmpeg.h"
+#include "macro.h"
 
 /**
  * 解视频，获取视频相关的Info
@@ -11,6 +12,7 @@ TinaFFmpeg *ffmpeg = 0;
 
 JavaVM *javaVM = 0;
 ANativeWindow *window = 0;
+JavaCallHelper *callHelper = 0;
 
 //静态的同步，应用在就一直存在
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -54,16 +56,26 @@ void render(uint8_t *data, int linesize, int w, int h) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_tina_com_player_TinaPlayer_nativePrepare(JNIEnv *env, jobject instance, jstring dataSource_) {
+Java_tina_com_player_TinaPlayer_native_1prepare(JNIEnv *env, jobject instance,
+                                                jstring dataSource_) {
+
     const char *dataSource = env->GetStringUTFChars(dataSource_, 0);
 
-    JavaCallHelper *callHelper = new JavaCallHelper(javaVM, env, instance);
+    callHelper = new JavaCallHelper(javaVM, env, instance);
 
     ffmpeg = new TinaFFmpeg(callHelper, dataSource);
     ffmpeg->setRenderFrameCallback(render);
     ffmpeg->prepare();
 
     env->ReleaseStringUTFChars(dataSource_, dataSource);
+}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_tina_com_player_TinaPlayer_nativePrepare(JNIEnv *env, jobject instance, jstring dataSource_) {
+
 }
 
 extern "C"
@@ -73,6 +85,7 @@ Java_tina_com_player_TinaPlayer_native_1start(JNIEnv *env, jobject instance) {
     ffmpeg->start();
 
 }
+
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -88,3 +101,15 @@ Java_tina_com_player_TinaPlayer_native_1setSurface(JNIEnv *env, jobject instance
 
 
 }
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_tina_com_player_TinaPlayer_native_1stop(JNIEnv *env, jobject instance) {
+    if(ffmpeg){
+        ffmpeg->stop();
+    }
+    DELETE(callHelper);
+}
+
+

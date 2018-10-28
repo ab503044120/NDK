@@ -30,7 +30,9 @@ public:
 
     void setRenderFrameCallback(RenderFrameCallback callback);
 
-private:
+    void stop();
+
+public:
     char *dataSource;
     pthread_t pid;
     pthread_t pid_play;
@@ -40,6 +42,7 @@ private:
     VideoChannel *videoChannel = 0;
     bool isPlaying;
     RenderFrameCallback callback;
+    pthread_t pid_stop;
 };
 
 

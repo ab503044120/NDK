@@ -41,7 +41,7 @@ public class TinaPlayer implements SurfaceHolder.Callback{
      * 准备播放视频
      */
     public void prepare(){
-        nativePrepare(dataSource);
+        native_prepare(dataSource);
     }
 
     /**
@@ -52,7 +52,7 @@ public class TinaPlayer implements SurfaceHolder.Callback{
     }
 
     public void stop(){
-
+        native_stop();
     }
 
     public void onError(int errorCode){
@@ -109,9 +109,11 @@ public class TinaPlayer implements SurfaceHolder.Callback{
 
     }
 
-    native void nativePrepare(String dataSource);
+    native void native_prepare(String dataSource);
 
     native void native_start();
+
+    native void native_stop();
 
     native void native_setSurface(Surface surface);
 

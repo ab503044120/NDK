@@ -20,6 +20,11 @@ public:
     virtual ~BaseChannel(){
         packets.clear();
         frames.clear();
+        if (avCodecContext){
+            avcodec_close(avCodecContext);
+            avcodec_free_context(&avCodecContext);
+            avCodecContext = 0;
+        }
     }//子类必须实现
 
     static void releaseAvPacket(AVPacket** packet){
@@ -37,6 +42,8 @@ public:
     }
 
     virtual void play() = 0;
+
+    virtual void stop() = 0;
 
     int id;
     //解码数据包队列

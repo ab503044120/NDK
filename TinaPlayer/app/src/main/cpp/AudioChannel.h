@@ -26,6 +26,8 @@ public:
 
     void _play();//播放，对应视频的渲染render
 
+    void stop();
+
     int getPcm();
 
 
@@ -55,7 +57,8 @@ private:
     //播放器接口
     SLPlayItf bqPlayerInterface = 0;
 
-    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = 0;
+    //队列结构
+    SLAndroidSimpleBufferQueueItf bqPlayerBufferQueueInterface = 0;
 
 
     SwrContext *swrContext = 0;
