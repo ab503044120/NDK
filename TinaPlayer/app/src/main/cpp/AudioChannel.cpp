@@ -117,6 +117,7 @@ int AudioChannel::getPcm() {
     //获取一个frame的一个相对播放时间
     //获得播放这段数据的秒速（时间机）
     clock =  frame->pts * av_q2d(time_base);
+    releaseAvFrame(&frame);
     return data_size;
 }
 

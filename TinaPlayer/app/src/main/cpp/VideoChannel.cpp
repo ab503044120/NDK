@@ -151,11 +151,11 @@ void VideoChannel::render() {
             double diff = clock - audioClock;
             if (diff > 0) {
                 //大于0 表示视频比较快
-                LOGE("视频快了：%lf", diff);
+//                LOGE("视频快了：%lf", diff);
                 av_usleep((delays + diff) * 1000000);
             } else if (diff < 0) {
                 //不睡了，快点赶上音频
-                LOGE("音频快了：%lf",diff);
+//                LOGE("音频快了：%lf",diff);
                 // 视频包积压的太多了 （丢包）
                 if (fabs(diff) >= 0.05) {
                     releaseAvFrame(&frame);

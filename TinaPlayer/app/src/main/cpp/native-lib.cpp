@@ -109,7 +109,24 @@ Java_tina_com_player_TinaPlayer_native_1stop(JNIEnv *env, jobject instance) {
     if(ffmpeg){
         ffmpeg->stop();
     }
-    DELETE(callHelper);
+
+    if (callHelper){
+        DELETE(callHelper);
+    }
+
 }
 
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_tina_com_player_TinaPlayer_native_1release(JNIEnv *env, jobject instance) {
+
+    pthread_mutex_lock(&mutex);
+    if (window) {
+        //把原来的释放
+        ANativeWindow_release(window);
+        window = 0;
+    }
+    pthread_mutex_unlock(&mutex);
+
+}

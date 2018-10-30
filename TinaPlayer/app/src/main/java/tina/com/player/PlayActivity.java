@@ -1,6 +1,5 @@
 package tina.com.player;
 
-import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,7 +16,7 @@ import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
  * @date 2018/9/7
  */
 public class PlayActivity extends RxAppCompatActivity {
-    private TinaPlayer dnPlayer;
+    private TinaPlayer tinaPlayer;
     public String url;
 
     SurfaceView surfaceView;
@@ -29,9 +28,11 @@ public class PlayActivity extends RxAppCompatActivity {
                 .LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_play);
         surfaceView = findViewById(R.id.surfaceView);
-        dnPlayer = new TinaPlayer();
-        dnPlayer.setSurfaceView(surfaceView);
-        dnPlayer.setOnPrepareListener(new TinaPlayer.OnPrepareListener() {
+
+        setLayoutParamsForSurfaceView();
+        tinaPlayer = new TinaPlayer();
+        tinaPlayer.setSurfaceView(surfaceView);
+        tinaPlayer.setOnPrepareListener(new TinaPlayer.OnPrepareListener() {
 
             @Override
             public void onPrepare() {
@@ -41,52 +42,68 @@ public class PlayActivity extends RxAppCompatActivity {
                         Toast.makeText(PlayActivity.this, "开始播放", Toast.LENGTH_SHORT).show();
                     }
                 });
-                dnPlayer.start();
+                tinaPlayer.start();
             }
         });
 
         url = getIntent().getStringExtra("url");
-        dnPlayer.setDataSource(url);
+        tinaPlayer.setDataSource(url);
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        setLayoutParamsForSurfaceView();
+    }
+
+    public void setLayoutParamsForSurfaceView(){
         DisplayMetrics dm = new DisplayMetrics();
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+        if (isOrientationPortrait()) {
             getWindowManager().getDefaultDisplay().getMetrics(dm);
             int screenWidth = dm.widthPixels;
             ViewGroup.LayoutParams lp = surfaceView.getLayoutParams();
             lp.width = screenWidth;
             lp.height = screenWidth * 9/16;
             surfaceView.setLayoutParams(lp);
-
-        } else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        } else if (isOrientationLandscape()) {
             //横屏显示
             ViewGroup.LayoutParams lp = surfaceView.getLayoutParams();
             lp.width = lp.MATCH_PARENT;
             lp.height = lp.MATCH_PARENT;
             surfaceView.setLayoutParams(lp);
-
         }
+    }
 
+    public int getConfiguration(){
+        if (null != getResources() && null != getResources().getConfiguration()){
+            return getResources().getConfiguration().orientation;
+        }
+        return -1;
+    }
+
+    public boolean isOrientationPortrait(){
+        return  getConfiguration() == Configuration.ORIENTATION_PORTRAIT;
+    }
+
+    public boolean isOrientationLandscape(){
+        return getConfiguration() == Configuration.ORIENTATION_LANDSCAPE;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        dnPlayer.prepare();
+        tinaPlayer.prepare();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        dnPlayer.stop();
+        tinaPlayer.stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        dnPlayer.release();
+        tinaPlayer.release();
     }
 }

@@ -36,6 +36,8 @@ public:
             q.push(new_value);
             pthread_cond_signal(&cond);
             pthread_mutex_unlock(&mutex);
+        } else {//没有释放，内存泄漏
+            relaseCallback(&new_value);
         }
         pthread_mutex_unlock(&mutex);
     }

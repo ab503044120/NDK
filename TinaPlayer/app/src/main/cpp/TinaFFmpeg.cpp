@@ -3,6 +3,10 @@
 //
 #include <cstring>
 #include <pthread.h>
+extern "C"{
+#include <libavutil/time.h>
+}
+
 
 #include "TinaFFmpeg.h"
 #include "macro.h"
@@ -27,7 +31,6 @@ TinaFFmpeg::TinaFFmpeg(JavaCallHelper *callHelper, const char *dataSource) {
 TinaFFmpeg::~TinaFFmpeg() {
     //释放
     DELETE(dataSource);
-    DELETE(callHelper);
 }
 
 
@@ -51,7 +54,9 @@ void TinaFFmpeg::_prepare() {
     //设置超时时间  微秒
     av_dict_set(&options, "timeout", "5000000", 0);
     //耗时操作
-    int ret = avformat_open_input(&formatContext, dataSource, 0, 0);
+    int ret = avformat_open_input(&formatContext, dataSource, 0, &options);
+
+    av_dict_free(&options);
 
     //ret 不为0表示 打开媒体失败
     if (ret != 0) {
@@ -164,6 +169,18 @@ void TinaFFmpeg::_start() {
     int ret;
     //1.读取媒体数据包（音频、视频数据）
     while (isPlaying) {
+        //读取文件的时候没有网络请求，一下子读完了，可能导致oom
+        //特别是读本地文件的时候 一下子就读完了
+        if (audioChannel && audioChannel->packets.size() > 100) {
+            //10ms
+            av_usleep(1000 * 10);
+            continue;
+        }
+        if (videoChannel && videoChannel->packets.size() > 100) {
+            av_usleep(1000 * 10);
+            continue;
+        }
+
         AVPacket *avPacket = av_packet_alloc();
         ret = av_read_frame(formatContext, avPacket);
         //等于0成功，其它失败
@@ -180,14 +197,13 @@ void TinaFFmpeg::_start() {
             //读取完成，但是可能还没有播放完成
             if (audioChannel->packets.empty() && audioChannel->frames.empty()
                 && videoChannel->packets.empty() && videoChannel->frames.empty()){
+                av_packet_free(&avPacket);//这里不释放会有内存泄漏，崩溃
                 break;
             }
-
         } else {
-
+            av_packet_free(&avPacket);
             break;
         }
-
     }
     isPlaying = 0;
     audioChannel->stop();
@@ -204,18 +220,27 @@ void *aync_stop(void *args) {
     pthread_join(ffmpeg->pid, 0);
     //保证 start线程结束
     pthread_join(ffmpeg->pid_play, 0);
+
+    DELETE(ffmpeg->audioChannel)
+
+    DELETE(ffmpeg->videoChannel)
+
     //这时候释放就不会出现问题了
     if (ffmpeg->formatContext) {
         avformat_close_input(&ffmpeg->formatContext);
         avformat_free_context(ffmpeg->formatContext);
         ffmpeg->formatContext = 0;
     }
+
+    DELETE(ffmpeg)
+
     return 0;
 }
 
 
 void TinaFFmpeg::stop() {
     isPlaying = 0;
+    callHelper = 0;
 
     pthread_create(&pid_stop, 0, aync_stop, this);
 
